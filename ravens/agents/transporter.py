@@ -24,6 +24,9 @@ from ravens.models.transport_ablation import TransportPerPixelLoss
 from ravens.models.transport_goal import TransportGoal
 from ravens.tasks import cameras
 from ravens.utils import utils
+from ravens.agents.AdaBins.models import UnetAdaptiveBins
+from ravens.agents.AdaBins import model_io
+from PIL import Image
 import tensorflow as tf
 
 
@@ -41,6 +44,17 @@ class TransporterAgent:
     self.cam_config = cameras.RealSenseD415.CONFIG
     self.models_dir = os.path.join(root_dir, 'checkpoints', self.name)
     self.bounds = np.array([[0.25, 0.75], [-0.5, 0.5], [0, 0.28]])
+    MIN_DEPTH = 1e-3
+    MAX_DEPTH_NYU = 10
+    N_BINS = 256
+    self.model = UnetAdaptiveBins.build(n_bins=N_BINS, min_val=MIN_DEPTH, max_val=MAX_DEPTH_NYU)
+    pretrained_path = "./AdaBins/pretrained/AdaBins_nyu.pt"
+    self.model, _, _ = model_io.load_checkpoint(pretrained_path, self.model)
+
+  def get_adabins_heightmap(self, cmap):
+    """Infer depth using AdaBins algorithm to color image"""
+    _, predicted_depth = self.model(cmap)
+    return predicted_depth
 
   def get_image(self, obs):
     """Stack color and height images image."""
