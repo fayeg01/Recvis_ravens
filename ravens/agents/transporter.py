@@ -68,7 +68,7 @@ class TransporterAgent:
     # Get color and height maps from RGB-D images.
     cmap, hmap = utils.get_fused_heightmap(
         obs, self.cam_config, self.bounds, self.pix_size)
-    hmap = np.zeros_like(hmap)
+#     hmap = np.zeros_like(hmap)
     img = np.concatenate((cmap,
                           hmap[Ellipsis, None],
                           hmap[Ellipsis, None],
